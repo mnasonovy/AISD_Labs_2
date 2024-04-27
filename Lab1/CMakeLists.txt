@@ -26,3 +26,8 @@ add_executable(intset_test
     "test.cc")
 target_link_libraries(intset_test gtest gtest_main intset)
 target_include_directories(intset_test PRIVATE "${CMAKE_SOURCE_DIR}")
+
+add_executable(task_test
+    "task.cc")
+target_link_libraries(task_test gtest gtest_main intset)
+target_include_directories(task_test PRIVATE "${CMAKE_SOURCE_DIR}")
