@@ -40,7 +40,7 @@ public:
         return insertNode(root, key);
     }
 
-    bool contains(int key) {
+    bool contains(int key)const {
         return search(root, key);
     }
 
@@ -87,7 +87,7 @@ private:
             return insertNode(node->right, key);
     }
 
-    bool search(Node* node, int key) {
+    bool search(Node* node, int key)const {
         if (node == nullptr)
             return false;
         if (key == node->key)

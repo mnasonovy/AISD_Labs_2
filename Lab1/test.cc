@@ -6,7 +6,7 @@
 #include <iomanip>
 #include "main.cc"
 
-#include <cstdlib> // Для использования функции std::rand()
+#include <cstdlib> 
 
 size_t lcg() {
     static size_t x = 0;
@@ -20,7 +20,6 @@ void fillContainer(IntSet& container, size_t size) {
     }
 }
 
-// Функция для тестирования времени заполнения контейнера
 double testFillTime(IntSet& container, size_t size) {
     auto start = std::chrono::high_resolution_clock::now();
     fillContainer(container, size);
@@ -29,7 +28,6 @@ double testFillTime(IntSet& container, size_t size) {
     return duration.count();
 }
 
-// Функция для тестирования времени поиска случайного числа в контейнере
 double testSearchTime(const IntSet& container, size_t numTests) {
     double totalTime = 0.0;
 
@@ -45,7 +43,6 @@ double testSearchTime(const IntSet& container, size_t numTests) {
     return totalTime / numTests;
 }
 
-// Функция для тестирования времени добавления и удаления случайного числа из контейнера
 std::pair<double, double> testInsertDeleteTime(IntSet& container, size_t numTests) {
     double insertTime = 0.0;
     double eraseTime = 0.0;
@@ -70,18 +67,11 @@ std::pair<double, double> testInsertDeleteTime(IntSet& container, size_t numTest
 }
 
 int main() {
-    std::ofstream outFile("performance_results.txt");
-    if (!outFile.is_open()) {
-        std::cerr << "Failed to open the output file." << std::endl;
-        return 1;
-    }
-
     size_t numTestsFill = 100;
     size_t numTestsSearch = 1000;
     size_t numTestsInsertDelete = 1000;
 
-    // Запись заголовка в файл
-    outFile << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
+    std::cout << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
         << "Search Time (s)" << std::setw(20) << "Insert Time (s)" << std::setw(20) << "Delete Time (s)" << std::endl;
 
     for (size_t size : {1000, 10000, 100000}) {
@@ -91,13 +81,12 @@ int main() {
         double searchTime = testSearchTime(intSet, numTestsSearch);
         auto insertDeleteTime = testInsertDeleteTime(intSet, numTestsInsertDelete);
 
-        outFile << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
+        std::cout << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
             << insertDeleteTime.first << std::setw(20) << insertDeleteTime.second << std::endl;
     }
 
-    // Сравнение с std::vector<int>
-    outFile << "\nComparison with std::vector<int>:\n";
-    outFile << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
+    std::cout << "\nComparison with std::vector<int>:\n";
+    std::cout << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
         << "Search Time (s)" << std::setw(20) << "Insert Time (s)" << std::setw(20) << "Delete Time (s)" << std::endl;
 
     for (size_t size : {1000, 10000, 100000}) {
@@ -119,7 +108,7 @@ int main() {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsSearch; ++i) {
                 size_t target = lcg();
-                std::find(vec.begin(), vec.end(), target);
+                std::find(vec.begin(), vec.end(), static_cast<int>(target));
             }
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end - start;
@@ -131,7 +120,7 @@ int main() {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsInsertDelete; ++i) {
                 size_t key = lcg();
-                vec.push_back(key);
+                vec.push_back(static_cast<int>(key));
             }
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end - start;
@@ -143,20 +132,18 @@ int main() {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsInsertDelete; ++i) {
                 size_t index = lcg() % vec.size();
-                vec.erase(vec.begin() + index);
+                vec.erase(vec.begin() + static_cast<int>(index));
             }
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end - start;
             deleteTime = duration.count() / numTestsInsertDelete;
         }
 
-        outFile << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
+        std::cout << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
             << insertTime << std::setw(20) << deleteTime << std::endl;
     }
 
-    outFile.close();
-
-    std::cout << "Results saved to performance_results.txt" << std::endl;
+    std::cout << "Results printed to console." << std::endl;
 
     return 0;
 }
