@@ -7,7 +7,7 @@ private:
         Node* left;
         Node* right;
 
-        Node(int key) : key(key), left(nullptr), right(nullptr) {}
+        explicit Node(int key) : key(key), left(nullptr), right(nullptr) {}
     };
 
     Node* root;
@@ -16,65 +16,65 @@ public:
     IntSet() : root(nullptr) {}
 
     ~IntSet() {
-        destroy(root);
+        Destroy(root);
     }
 
     IntSet(const IntSet& other) {
-        root = copy(other.root);
+        root = Copy(other.root);
     }
 
     IntSet& operator=(const IntSet& other) {
         if (this != &other) {
-            destroy(root);
-            root = copy(other.root);
+            Destroy(root);
+            root = Copy(other.root);
         }
         return *this;
     }
 
-    void print() {
-        printInOrder(root);
+    void Print() {
+        PrintInOrder(root);
         std::cout << std::endl;
     }
 
-    bool insert(int key) {
-        return insertNode(root, key);
+    bool Insert(int key) {
+        return InsertNode(root, key);
     }
 
-    bool contains(int key)const {
-        return search(root, key);
+    bool Contains(int key) const {
+        return Search(root, key);
     }
 
-    bool erase(int key) {
-        return deleteNode(root, key);
+    bool Erase(int key) {
+        return DeleteNode(root, key);
     }
 
 private:
-    Node* copy(Node* node) {
+    Node* Copy(Node* node) {
         if (node == nullptr)
             return nullptr;
-        Node* newNode = new Node(node->key);
-        newNode->left = copy(node->left);
-        newNode->right = copy(node->right);
-        return newNode;
+        Node* new_node = new Node(node->key);
+        new_node->left = Copy(node->left);
+        new_node->right = Copy(node->right);
+        return new_node;
     }
 
-    void destroy(Node* node) {
+    void Destroy(Node* node) {
         if (node != nullptr) {
-            destroy(node->left);
-            destroy(node->right);
+            Destroy(node->left);
+            Destroy(node->right);
             delete node;
         }
     }
 
-    void printInOrder(Node* node) {
+    void PrintInOrder(Node* node) {
         if (node != nullptr) {
-            printInOrder(node->left);
+            PrintInOrder(node->left);
             std::cout << node->key << " ";
-            printInOrder(node->right);
+            PrintInOrder(node->right);
         }
     }
 
-    bool insertNode(Node*& node, int key) {
+    bool InsertNode(Node*& node, int key) {
         if (node == nullptr) {
             node = new Node(key);
             return true;
@@ -82,29 +82,29 @@ private:
         if (key == node->key)
             return false;
         if (key < node->key)
-            return insertNode(node->left, key);
+            return InsertNode(node->left, key);
         else
-            return insertNode(node->right, key);
+            return InsertNode(node->right, key);
     }
 
-    bool search(Node* node, int key)const {
+    bool Search(Node* node, int key) const {
         if (node == nullptr)
             return false;
         if (key == node->key)
             return true;
         if (key < node->key)
-            return search(node->left, key);
+            return Search(node->left, key);
         else
-            return search(node->right, key);
+            return Search(node->right, key);
     }
 
-    bool deleteNode(Node*& node, int key) {
+    bool DeleteNode(Node*& node, int key) {
         if (node == nullptr)
             return false;
         if (key < node->key)
-            return deleteNode(node->left, key);
+            return DeleteNode(node->left, key);
         else if (key > node->key)
-            return deleteNode(node->right, key);
+            return DeleteNode(node->right, key);
         else {
             if (node->left == nullptr) {
                 Node* temp = node->right;
@@ -121,9 +121,10 @@ private:
                 while (successor->left != nullptr)
                     successor = successor->left;
                 node->key = successor->key;
-                deleteNode(node->right, successor->key);
+                DeleteNode(node->right, successor->key);
             }
             return true;
         }
     }
 };
+

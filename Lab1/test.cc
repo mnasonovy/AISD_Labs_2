@@ -1,40 +1,35 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <chrono>
-#include <algorithm>
-#include <iomanip>
 #include "main.cc"
 
-#include <cstdlib> 
-
-size_t lcg() {
+size_t LCG() {
     static size_t x = 0;
     x = (1021 * x + 24631) % 116640;
     return x;
 }
 
-void fillContainer(IntSet& container, size_t size) {
+void FillContainer(IntSet& container, size_t size) {
     for (size_t i = 0; i < size; ++i) {
-        container.insert(lcg());
+        container.Insert(LCG());
     }
 }
 
-double testFillTime(IntSet& container, size_t size) {
+double TestFillTime(IntSet& container, size_t size) {
     auto start = std::chrono::high_resolution_clock::now();
-    fillContainer(container, size);
+    FillContainer(container, size);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
     return duration.count();
 }
 
-double testSearchTime(const IntSet& container, size_t numTests) {
+double TestSearchTime(const IntSet& container, size_t numTests) {
     double totalTime = 0.0;
 
     for (size_t i = 0; i < numTests; ++i) {
-        size_t target = lcg();
+        size_t target = LCG();
         auto start = std::chrono::high_resolution_clock::now();
-        container.contains(target);
+        container.Contains(target);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
         totalTime += duration.count();
@@ -43,21 +38,21 @@ double testSearchTime(const IntSet& container, size_t numTests) {
     return totalTime / numTests;
 }
 
-std::pair<double, double> testInsertDeleteTime(IntSet& container, size_t numTests) {
+std::pair<double, double> TestInsertDeleteTime(IntSet& container, size_t numTests) {
     double insertTime = 0.0;
     double eraseTime = 0.0;
 
     for (size_t i = 0; i < numTests; ++i) {
-        size_t key = lcg();
+        size_t key = LCG();
 
         auto start = std::chrono::high_resolution_clock::now();
-        container.insert(key);
+        container.Insert(key);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
         insertTime += duration.count();
 
         start = std::chrono::high_resolution_clock::now();
-        container.erase(key);
+        container.Erase(key);
         end = std::chrono::high_resolution_clock::now();
         duration = end - start;
         eraseTime += duration.count();
@@ -71,23 +66,21 @@ int main() {
     size_t numTestsSearch = 1000;
     size_t numTestsInsertDelete = 1000;
 
-    std::cout << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
-        << "Search Time (s)" << std::setw(20) << "Insert Time (s)" << std::setw(20) << "Delete Time (s)" << std::endl;
+    std::cout << "Container Size\tFill Time (s)\tSearch Time (s)\tInsert Time (s)\tDelete Time (s)" << std::endl;
 
     for (size_t size : {1000, 10000, 100000}) {
         IntSet intSet;
-        double fillTime = testFillTime(intSet, size);
+        double fillTime = TestFillTime(intSet, size);
 
-        double searchTime = testSearchTime(intSet, numTestsSearch);
-        auto insertDeleteTime = testInsertDeleteTime(intSet, numTestsInsertDelete);
+        double searchTime = TestSearchTime(intSet, numTestsSearch);
+        auto insertDeleteTime = TestInsertDeleteTime(intSet, numTestsInsertDelete);
 
-        std::cout << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
-            << insertDeleteTime.first << std::setw(20) << insertDeleteTime.second << std::endl;
+        std::cout << size << "\t" << fillTime << "\t" << searchTime << "\t"
+            << insertDeleteTime.first << "\t" << insertDeleteTime.second << std::endl;
     }
 
     std::cout << "\nComparison with std::vector<int>:\n";
-    std::cout << std::setw(15) << "Container Size" << std::setw(20) << "Fill Time (s)" << std::setw(20)
-        << "Search Time (s)" << std::setw(20) << "Insert Time (s)" << std::setw(20) << "Delete Time (s)" << std::endl;
+    std::cout << "Container Size\tFill Time (s)\tSearch Time (s)\tInsert Time (s)\tDelete Time (s)" << std::endl;
 
     for (size_t size : {1000, 10000, 100000}) {
         std::vector<int> vec;
@@ -96,7 +89,7 @@ int main() {
         {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < size; ++i) {
-                vec.push_back(lcg());
+                vec.push_back(LCG());
             }
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end - start;
@@ -107,8 +100,10 @@ int main() {
         {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsSearch; ++i) {
-                size_t target = lcg();
-                std::find(vec.begin(), vec.end(), static_cast<int>(target));
+                size_t target = LCG();
+                for (const int& num : vec) {
+                    if (num == static_cast<int>(target)) break;
+                }
             }
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> duration = end - start;
@@ -119,7 +114,7 @@ int main() {
         {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsInsertDelete; ++i) {
-                size_t key = lcg();
+                size_t key = LCG();
                 vec.push_back(static_cast<int>(key));
             }
             auto end = std::chrono::high_resolution_clock::now();
@@ -131,7 +126,7 @@ int main() {
         {
             auto start = std::chrono::high_resolution_clock::now();
             for (size_t i = 0; i < numTestsInsertDelete; ++i) {
-                size_t index = lcg() % vec.size();
+                size_t index = LCG() % vec.size();
                 vec.erase(vec.begin() + static_cast<int>(index));
             }
             auto end = std::chrono::high_resolution_clock::now();
@@ -139,8 +134,8 @@ int main() {
             deleteTime = duration.count() / numTestsInsertDelete;
         }
 
-        std::cout << std::setw(15) << size << std::setw(20) << fillTime << std::setw(20) << searchTime << std::setw(20)
-            << insertTime << std::setw(20) << deleteTime << std::endl;
+        std::cout << size << "\t" << fillTime << "\t" << searchTime << "\t"
+            << insertTime << "\t" << deleteTime << std::endl;
     }
 
     std::cout << "Results printed to console." << std::endl;
