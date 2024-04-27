@@ -9,84 +9,78 @@ private:
         T key;
         Node* left;
         Node* right;
+        Node* parent;
         int count;
-
-        Node(const T& key) : key(key), left(nullptr), right(nullptr), count(1) {}
+        Node(const T& key) : key(key), left(nullptr), right(nullptr), parent(nullptr), count(1) {}
     };
-
     Node* root;
 
 public:
     Set() : root(nullptr) {}
 
     ~Set() {
-        destroy(root);
+        Destroy(root);
     }
 
     Set(const Set& other) {
-        root = copy(other.root);
+        root = Copy(other.root);
     }
 
     Set& operator=(const Set& other) {
         if (this != &other) {
-            destroy(root);
-            root = copy(other.root);
+            Destroy(root);
+            root = Copy(other.root);
         }
         return *this;
     }
 
-    void print() {
-        printInOrder(root);
+    void Print() {
+        PrintInOrder(root);
         std::cout << std::endl;
     }
 
-    bool insert(const T& key) {
-        return insertNode(root, key);
+    bool Insert(const T& key) {
+        return InsertNode(root, key);
     }
 
-    bool contains(const T& key) const {
-        return search(root, key);
+    bool Contains(const T& key) const {
+        return Search(root, key);
     }
 
-    size_t count(const T& key) const {
-        return countNode(root, key);
+    size_t Count(const T& key) const {
+        return CountNode(root, key);
+    }
+
+    size_t Depth() const {
+        return CalculateDepth(root);
     }
 
     class Iterator {
     private:
         Node* current;
-        std::stack<Node*> parents;
 
     public:
-        Iterator(Node* root) {
-            current = root;
-            while (current != nullptr) {
-                parents.push(current);
-                current = current->left;
-            }
-            if (!parents.empty()) {
-                current = parents.top();
-                parents.pop();
-            }
-        }
+        Iterator(Node* node) : current(node) {}
 
         Iterator& operator++() {
-            if (current == nullptr && !parents.empty()) {
-                current = parents.top();
-                parents.pop();
+            if (current == nullptr) return *this;
+            if (current->right != nullptr) {
+                current = current->right;
+                while (current->left != nullptr) current = current->left;
             }
-            if (current != nullptr && current->right != nullptr) {
-                Node* temp = current->right;
-                while (temp != nullptr) {
-                    parents.push(temp);
-                    temp = temp->left;
+            else {
+                Node* p = current->parent;
+                while (p != nullptr && current == p->right) {
+                    current = p;
+                    p = p->parent;
                 }
-            }
-            if (!parents.empty()) {
-                current = parents.top();
-                parents.pop();
+                current = p;
             }
             return *this;
+        }
+
+        bool operator==(const Iterator& other) const {
+            return current == other.current;
         }
 
         bool operator!=(const Iterator& other) const {
@@ -99,7 +93,7 @@ public:
     };
 
     Iterator begin() const {
-        return Iterator(getLeftmost(root));
+        return Iterator(GetLeftmost(root));
     }
 
     Iterator end() const {
@@ -107,34 +101,35 @@ public:
     }
 
 private:
-    Node* copy(Node* node) {
+
+    Node* Copy(Node* node) {
         if (node == nullptr)
             return nullptr;
-        Node* newNode = new Node(node->key);
-        newNode->left = copy(node->left);
-        newNode->right = copy(node->right);
-        newNode->count = node->count;
-        return newNode;
+        Node* new_node = new Node(node->key);
+        new_node->left = Copy(node->left);
+        new_node->right = Copy(node->right);
+        new_node->count = node->count;
+        return new_node;
     }
 
-    void destroy(Node* node) {
+    void Destroy(Node* node) {
         if (node != nullptr) {
-            destroy(node->left);
-            destroy(node->right);
+            Destroy(node->left);
+            Destroy(node->right);
             delete node;
         }
     }
 
-    void printInOrder(Node* node) {
+    void PrintInOrder(Node* node) {
         if (node != nullptr) {
-            printInOrder(node->left);
+            PrintInOrder(node->left);
             for (int i = 0; i < node->count; ++i)
                 std::cout << node->key << " ";
-            printInOrder(node->right);
+            PrintInOrder(node->right);
         }
     }
 
-    bool insertNode(Node*& node, const T& key) {
+    bool InsertNode(Node*& node, const T& key) {
         if (node == nullptr) {
             node = new Node(key);
             return true;
@@ -143,39 +138,135 @@ private:
             node->count++;
             return true;
         }
-        if (key < node->key)
-            return insertNode(node->left, key);
-        else
-            return insertNode(node->right, key);
+        if (key < node->key) {
+            if (node->left == nullptr) {
+                node->left = new Node(key);
+                node->left->parent = node;
+                BalanceTree(node->left); 
+                return true;
+            }
+            return InsertNode(node->left, key);
+        }
+        else {
+            if (node->right == nullptr) {
+                node->right = new Node(key);
+                node->right->parent = node;
+                BalanceTree(node->right); 
+                return true;
+            }
+            return InsertNode(node->right, key);
+        }
     }
 
-    bool search(Node* node, const T& key) const {
+    bool Search(Node* node, const T& key) const {
         if (node == nullptr)
             return false;
         if (key == node->key)
             return true;
         if (key < node->key)
-            return search(node->left, key);
+            return Search(node->left, key);
         else
-            return search(node->right, key);
+            return Search(node->right, key);
     }
 
-    size_t countNode(Node* node, const T& key) const {
+    size_t CountNode(Node* node, const T& key) const {
         if (node == nullptr)
             return 0;
         if (key == node->key)
             return node->count;
         if (key < node->key)
-            return countNode(node->left, key);
+            return CountNode(node->left, key);
         else
-            return countNode(node->right, key);
+            return CountNode(node->right, key);
     }
 
-    Node* getLeftmost(Node* node) const {
+    size_t CalculateDepth(Node* node) const {
+        if (node == nullptr)
+            return 0;
+        size_t left_depth = CalculateDepth(node->left);
+        size_t right_depth = CalculateDepth(node->right);
+        return (left_depth > right_depth) ? (left_depth + 1) : (right_depth + 1);
+    }
+
+    Node* GetLeftmost(Node* node) const {
         if (node == nullptr)
             return nullptr;
         while (node->left != nullptr)
             node = node->left;
         return node;
     }
+
+    void BalanceTree(Node*& node) {
+        if (node == nullptr)
+            return;
+
+        int balance = CalculateBalance(node);
+
+        if (balance > 1 && CalculateBalance(node->left) >= 0) {
+            node = RotateRight(node);
+            return;
+        }
+
+        if (balance < -1 && CalculateBalance(node->right) <= 0) {
+            node = RotateLeft(node);
+            return;
+        }
+
+        if (balance > 1 && CalculateBalance(node->left) < 0) {
+            node->left = RotateLeft(node->left);
+            node = RotateRight(node);
+            return;
+        }
+
+        if (balance < -1 && CalculateBalance(node->right) > 0) {
+            node->right = RotateRight(node->right);
+            node = RotateLeft(node);
+        }
+    }
+
+    int CalculateBalance(Node* node) const {
+        if (node == nullptr)
+            return 0;
+        return CalculateDepth(node->left) - CalculateDepth(node->right);
+    }
+
+    Node* RotateRight(Node* node) {
+        Node* new_root = node->left;
+        node->left = new_root->right;
+        if (new_root->right != nullptr)
+            new_root->right->parent = node;
+        new_root->right = node;
+        new_root->parent = node->parent;
+        node->parent = new_root;
+        return new_root;
+    }
+
+    Node* RotateLeft(Node* node) {
+        Node* new_root = node->right;
+        node->right = new_root->left;
+        if (new_root->left != nullptr)
+            new_root->left->parent = node;
+        new_root->left = node;
+        new_root->parent = node->parent;
+        node->parent = new_root;
+        return new_root;
+    }
 };
+
+bool operator<(const std::complex<double>& lhs, const std::complex<double>& rhs) {
+    if (lhs.real() == rhs.real()) {
+        return lhs.imag() < rhs.imag();
+    }
+    return lhs.real() < rhs.real();
+}
+
+bool operator<(const std::complex<float>& lhs, const std::complex<float>& rhs) {
+    if (lhs.real() == rhs.real()) {
+        return lhs.imag() < rhs.imag();
+    }
+    return lhs.real() < rhs.real();
+}
+
+bool operator<(const std::string& lhs, const std::string& rhs) {
+    return lhs.compare(rhs) < 0;
+}

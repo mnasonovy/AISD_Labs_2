@@ -17,6 +17,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_library(intset
+   "add_task.cc"
    "main.cc")
 set_target_properties(intset PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(intset PUBLIC cxx_std_23)
@@ -31,3 +32,8 @@ add_executable(task_test
     "task.cc")
 target_link_libraries(task_test gtest gtest_main intset)
 target_include_directories(task_test PRIVATE "${CMAKE_SOURCE_DIR}")
+
+add_executable(add_task_test
+    "add_task_test.cc")
+target_link_libraries(add_task_test gtest gtest_main intset)
+target_include_directories(add_task_test PRIVATE "${CMAKE_SOURCE_DIR}")
