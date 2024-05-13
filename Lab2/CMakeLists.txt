@@ -31,3 +31,8 @@ add_executable(task_test
 "task_test.cc")
 target_link_libraries(task_test gtest gtest_main unorderedmap)
 target_include_directories(task_test PRIVATE "${CMAKE_SOURCE_DIR}")
+
+add_executable(interface_task
+"interface_task.cc")
+target_link_libraries(interface_task gtest gtest_main unorderedmap)
+target_include_directories(interface_task PRIVATE "${CMAKE_SOURCE_DIR}")
