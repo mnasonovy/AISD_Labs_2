@@ -26,3 +26,8 @@ add_executable(function_test
     "functions_test.cc")
 target_link_libraries(function_test gtest gtest_main unorderedmap)
 target_include_directories(function_test PRIVATE "${CMAKE_SOURCE_DIR}")
+
+add_executable(task_test
+"task_test.cc")
+target_link_libraries(task_test gtest gtest_main unorderedmap)
+target_include_directories(task_test PRIVATE "${CMAKE_SOURCE_DIR}")
