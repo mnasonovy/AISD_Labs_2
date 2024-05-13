@@ -13,21 +13,125 @@ public:
         Distance distance;
     };
 
-    bool has_vertex(const Vertex& v) const;
-    void add_vertex(const Vertex& v);
-    bool remove_vertex(const Vertex& v);
-    std::vector<Vertex> vertices() const;
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::has_vertex(const Vertex& v) const {
+        return adjacency_list.find(v) != adjacency_list.end();
+    }
 
-    void add_edge(const Vertex& from, const Vertex& to, const Distance& d);
-    bool remove_edge(const Vertex& from, const Vertex& to);
-    bool remove_edge(const Edge& e);
-    bool has_edge(const Vertex& from, const Vertex& to) const;
-    bool has_edge(const Edge& e) const;
+    template<typename Vertex, typename Distance>
+    void Graph<Vertex, Distance>::add_vertex(const Vertex& v) {
+        if (!has_vertex(v)) {
+            adjacency_list[v] = std::vector<Edge>();
+        }
+    }
 
-    std::vector<Edge> edges(const Vertex& vertex) const;
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::remove_vertex(const Vertex& v) {
+        if (!has_vertex(v)) {
+            return false;
+        }
+        adjacency_list.erase(v);
 
-    size_t order() const;
-    size_t degree(const Vertex& v) const;
+        for (auto& pair : adjacency_list) {
+            auto& edges = pair.second;
+            edges.erase(std::remove_if(edges.begin(), edges.end(),
+                [&](const Edge& e) { return e.to == v; }),
+                edges.end());
+        }
+
+        return true;
+    }
+
+    template<typename Vertex, typename Distance>
+    std::vector<Vertex> Graph<Vertex, Distance>::vertices() const {
+        std::vector<Vertex> result;
+        for (const auto& pair : adjacency_list) {
+            result.push_back(pair.first);
+        }
+        return result;
+    }
+
+    template<typename Vertex, typename Distance>
+    void Graph<Vertex, Distance>::add_edge(const Vertex& from, const Vertex& to, const Distance& d) {
+        add_vertex(from);
+        add_vertex(to);
+        adjacency_list[from].push_back({ from, to, d });
+    }
+
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::remove_edge(const Vertex& from, const Vertex& to) {
+        auto it = std::find_if(adjacency_list[from].begin(), adjacency_list[from].end(),
+            [&](const Edge& e) { return e.to == to; });
+
+        if (it != adjacency_list[from].end()) {
+            adjacency_list[from].erase(it);
+            return true;
+        }
+
+        return false;
+    }
+
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::remove_edge(const Edge& e) {
+        if (!has_vertex(e.from) || !has_vertex(e.to)) {
+            return false;
+        }
+
+        auto& edges = adjacency_list[e.from];
+        auto it = std::find(edges.begin(), edges.end(), e);
+        if (it != edges.end()) {
+            edges.erase(it);
+            return true;
+        }
+
+        return false;
+    }
+
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::has_edge(const Vertex& from, const Vertex& to) const {
+        if (!has_vertex(from) || !has_vertex(to)) {
+            return false;
+        }
+
+        for (const auto& edge : adjacency_list.at(from)) {
+            if (edge.to == to) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template<typename Vertex, typename Distance>
+    bool Graph<Vertex, Distance>::has_edge(const Edge& e) const {
+        if (!has_vertex(e.from) || !has_vertex(e.to)) {
+            return false;
+        }
+
+        const auto& edges = adjacency_list.at(e.from);
+        return std::find(edges.begin(), edges.end(), e) != edges.end();
+    }
+
+    template<typename Vertex, typename Distance>
+    std::vector<typename Graph<Vertex, Distance>::Edge> Graph<Vertex, Distance>::edges(const Vertex& vertex) const {
+        if (!has_vertex(vertex)) {
+            return std::vector<Edge>();
+        }
+        return adjacency_list.at(vertex);
+    }
+
+    template<typename Vertex, typename Distance>
+    size_t Graph<Vertex, Distance>::order() const {
+        return adjacency_list.size();
+    }
+
+    template<typename Vertex, typename Distance>
+    size_t Graph<Vertex, Distance>::degree(const Vertex& v) const {
+        if (!has_vertex(v)) {
+            return 0;
+        }
+        return adjacency_list.at(v).size();
+    }
 
     std::vector<Edge> shortest_path(const Vertex& from, const Vertex& to) const;
     std::vector<Vertex> walk(const Vertex& start_vertex) const;
