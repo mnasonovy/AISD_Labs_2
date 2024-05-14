@@ -180,9 +180,23 @@ public:
         return path;
     }
 
+    template<typename Vertex, typename Distance>
+    std::vector<Vertex> Graph<Vertex, Distance>::walk(const Vertex& start_vertex) const {
+        std::unordered_set<Vertex> visited;
+        std::function<void(const Vertex&)> dfs = [&](const Vertex& current_vertex) {
+            visited.insert(current_vertex);
+            for (const auto& edge : adjacency_list.at(current_vertex)) {
+                const Vertex& next_vertex = edge.to;
+                if (visited.find(next_vertex) == visited.end()) { 
+                    dfs(next_vertex); 
+                }
+            }
+        };
+        dfs(start_vertex);
+        std::vector<Vertex> result(visited.begin(), visited.end());
+        return result;
+    }
 
-
-    std::vector<Vertex> walk(const Vertex& start_vertex) const;
 
 private:
     std::unordered_map<Vertex, std::vector<Edge>> adjacency_list;
