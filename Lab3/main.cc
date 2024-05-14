@@ -133,7 +133,55 @@ public:
         return adjacency_list.at(v).size();
     }
 
-    std::vector<Edge> shortest_path(const Vertex& from, const Vertex& to) const;
+    template<typename Vertex, typename Distance>
+    std::vector<typename Graph<Vertex, Distance>::Edge> Graph<Vertex, Distance>::shortest_path(const Vertex& from, const Vertex& to) const {
+        std::unordered_map<Vertex, Distance> distances;
+        std::unordered_map<Vertex, Vertex> previous;
+        std::priority_queue<std::pair<Distance, Vertex>, std::vector<std::pair<Distance, Vertex>>, std::greater<>> pq;
+        for (const auto& pair : adjacency_list) {
+            Vertex v = pair.first;
+            distances[v] = std::numeric_limits<Distance>::max();
+            previous[v] = Vertex();
+        }
+        distances[from] = Distance();
+        pq.push({ Distance(), from });
+
+        while (!pq.empty()) {
+            Vertex u = pq.top().second;
+            pq.pop();
+
+            if (u == to) {
+                break;
+            }
+
+            for (const auto& edge : adjacency_list.at(u)) {
+                Vertex v = edge.to;
+                Distance alt = distances[u] + edge.distance;
+                if (alt < distances[v]) {
+                    distances[v] = alt;
+                    previous[v] = u;
+                    pq.push({ alt, v });
+                }
+            }
+        }
+
+        std::vector<Edge> path;
+        for (Vertex v = to; previous[v] != Vertex(); v = previous[v]) {
+            Vertex u = previous[v];
+            for (const auto& edge : adjacency_list.at(u)) {
+                if (edge.to == v) {
+                    path.push_back(edge);
+                    break;
+                }
+            }
+        }
+        std::reverse(path.begin(), path.end());
+
+        return path;
+    }
+
+
+
     std::vector<Vertex> walk(const Vertex& start_vertex) const;
 
 private:
