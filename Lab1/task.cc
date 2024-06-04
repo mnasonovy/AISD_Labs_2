@@ -20,7 +20,7 @@ std::vector<int> findDuplicates(const std::vector<int>& vec) {
 }
 
 int main() {
-    std::vector<int> vec = { 3, 2, 2, 4 };
+    std::vector<int> vec = { 3, 2, 2, 4, 3, 7, 11, 22, 8, 19, 6, 6 };
 
     std::vector<int> duplicates = findDuplicates(vec);
 
